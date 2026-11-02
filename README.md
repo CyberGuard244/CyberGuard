@@ -1,30 +1,30 @@
 # CyberGuard AI
 
-Plataforma de segurança digital que analisa URLs, mensagens e ficheiros em busca de ameaças, usando a API do VirusTotal e análise heurística local.
+A digital security platform that analyzes URLs, messages, and files for threats using the VirusTotal API and local heuristic analysis.
 
-## Funcionalidades
+## Features
 
-- **Análise de URLs** — verifica links suspeitos via VirusTotal (72+ motores)
-- **Análise de Mensagens** — deteta phishing, urgência falsa e links encurtados
-- **Análise de Ficheiros** — upload e scan com hash SHA-256 + VirusTotal
-- **Histórico** — registo local dos últimos scans (localStorage)
-- **Fallback heurístico** — análise offline quando a API não está acessível
+- **URL Analysis** — checks suspicious links via VirusTotal (72+ engines)
+- **Message Analysis** — detects phishing, fake urgency, and shortened links
+- **File Analysis** — upload and scan with SHA-256 hash + VirusTotal
+- **Scan History** — local log of recent scans (localStorage)
+- **Heuristic Fallback** — offline analysis when the API is unavailable
 
-## Stack
+## Tech Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
+| Layer | Technology |
+|-------|------------|
 | Frontend | HTML + CSS + JS (single-file) |
-| API externa | VirusTotal v3 |
-| Backend (opcional) | Python / Flask |
+| External API | VirusTotal v3 |
+| Backend (optional) | Python / Flask |
 
-## Estrutura
+## Project Structure
 
 ```
 /
-├── index.html          # App frontend completa
+├── index.html          # Full frontend app
 ├── cyberguard-ai/
-│   ├── app.py          # Servidor Flask
+│   ├── app.py          # Flask server
 │   ├── requirements.txt
 │   ├── services/
 │   │   ├── url_analyzer.py
@@ -36,15 +36,14 @@ Plataforma de segurança digital que analisa URLs, mensagens e ficheiros em busc
 │       └── test_message_analyzer.py
 ```
 
-## Correr localmente
+## Running Locally
 
-### Frontend (só abrir o browser)
+### Frontend (open directly in browser)
 ```bash
-# Basta abrir o index.html no browser
 open index.html
 ```
 
-### Backend Flask (opcional)
+### Backend Flask (optional)
 ```bash
 cd cyberguard-ai
 pip install -r requirements.txt
@@ -53,4 +52,4 @@ python app.py
 
 ## Design
 
-Estética editorial escura: fundo `#050505`, acento laranja-vermelho `#FF4500`, tipografia Playfair Display + Inter, overlay de ruído, animações de reveal.
+Dark editorial aesthetic: `#050505` background, `#FF4500` orange-red accent, Playfair Display + Inter typography, noise overlay, reveal animations.
