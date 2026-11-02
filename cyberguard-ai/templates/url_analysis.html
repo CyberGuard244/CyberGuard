@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Analisar URL — CyberGuard AI{% endblock %}
+{% block page_title %}Analisar URL{% endblock %}
+
+{% block content %}
+<div class="form-page">
+
+    <div class="card" style="margin-bottom: 24px;">
+        <p class="card-title">Endereço para analisar</p>
+
+        <div class="form-group">
+            <label class="form-label" for="url-input">URL suspeito</label>
+            <input
+                type="text"
+                id="url-input"
+                class="form-input"
+                placeholder="https://exemplo.com ou copia o URL aqui..."
+                autocomplete="off"
+                spellcheck="false"
+            >
+        </div>
+
+        <div id="error-msg" class="error-msg"></div>
+
+        <button class="btn-analyze" id="analyze-btn" onclick="analyzeUrl()">
+            <i class='bx bx-search-alt'></i> Analisar URL
+        </button>
+    </div>
+
+    <!-- Resultado -->
+    <div class="result-box" id="result-box">
+        <div class="result-header">
+            <p class="section-title" style="margin:0;">Resultado da Análise</p>
+            <span class="risk-badge" id="risk-level">—</span>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <p class="label-small">Indicadores encontrados</p>
+            <ul class="indicators-list" id="indicators-list"></ul>
+        </div>
+
+        <div id="ai-box" style="display:none;">
+            <span class="ai-label"><i class='bx bx-bot'></i> Explicação da IA</span>
+            <div class="ai-explanation" id="ai-explanation"></div>
+        </div>
+    </div>
+
+    <div class="warning-notice">
+        <i class='bx bx-error-circle'></i>
+        <p>A ausência de indicadores suspeitos não garante que um URL seja seguro.
+           Esta análise é baseada em padrões conhecidos e pode não detetar todas as ameaças.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showUrlResult(data) {
+    const resultBox = document.getElementById('result-box');
+    resultBox.classList.add('show');
+
+    const riskEl = document.getElementById('risk-level');
+    riskEl.className = 'risk-badge risk-' + data.risk_level;
+    riskEl.textContent = '● ' + getRiskLabel(data.risk_level);
+
+    const list = document.getElementById('indicators-list');
+    if (data.indicators && data.indicators.length > 0) {
+        list.innerHTML = data.indicators
+            .map(i => `<li class="indicator-item">${escapeHtml(i)}</li>`)
+            .join('');
+    } else {
+        list.innerHTML = '<p class="indicator-none">✓ Nenhum indicador suspeito encontrado</p>';
+    }
+
+    const aiBox = document.getElementById('ai-box');
+    const aiEl  = document.getElementById('ai-explanation');
+    if (data.ai_explanation) {
+        aiEl.textContent = data.ai_explanation;
+        aiBox.style.display = 'block';
+    }
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+{% endblock %}

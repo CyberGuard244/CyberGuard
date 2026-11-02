@@ -1,0 +1,1008 @@
+<title>CyberGuard AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  --bg:   #050505; --card: #111111; --bd: rgba(255,255,255,.07);
+  --acc:  #FF4500; --adim: rgba(255,69,0,.1);
+  --txt:  #f0f0f0; --sub:  #777777; --dim: #333333;
+  --low:  #22c55e; --med:  #f59e0b; --hgh: #f43f5e;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding-block: env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--txt); font-size: 15px; line-height: 1.65;
+  min-height: 100vh; overflow-x: hidden;
+  padding-left: max(0px, env(safe-area-inset-left,0px));
+  padding-right: max(0px, env(safe-area-inset-right,0px));
+}
+::selection { background: var(--acc); color: white; }
+.serif { font-family: 'Playfair Display', Georgia, serif; }
+
+/* ─ NOISE ─ */
+.noise { position: fixed; inset: 0; z-index: 50; pointer-events: none; opacity: .04; mix-blend-mode: overlay; }
+
+/* ─ REVEAL ─ */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .75s cubic-bezier(.22,1,.36,1), transform .75s cubic-bezier(.22,1,.36,1); }
+.reveal.on { opacity: 1; transform: translateY(0); }
+
+/* ─ NAV ─ */
+.topnav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 26px 44px; display: flex; align-items: center; justify-content: space-between;
+  transition: padding .4s ease, background .4s ease;
+}
+.topnav.stuck { padding: 14px 44px; background: rgba(5,5,5,.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom: 1px solid var(--bd); }
+.nav-logo { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; letter-spacing: -.3px; cursor: pointer; }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nl { font-size: 13px; color: var(--sub); cursor: pointer; transition: color .2s; background: none; border: none; padding: 0; }
+.nl:hover, .nl.on { color: var(--txt); }
+.nav-btn { font-size: 13px; font-weight: 600; background: #fff; color: #000; padding: 9px 20px; border-radius: 99px; cursor: pointer; border: none; transition: all .2s; font-family: inherit; }
+.nav-btn:hover { transform: scale(1.04); background: #e8e8e8; }
+.hamburger { display: none; background: none; border: none; color: var(--txt); font-size: 22px; cursor: pointer; padding: 4px; }
+
+/* ─ DRAWER ─ */
+.drawer { display: none; position: fixed; inset: 0; z-index: 95; background: var(--bg); flex-direction: column; justify-content: center; padding: 48px 44px; }
+.drawer.open { display: flex; }
+.dm-link { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 600; color: var(--sub); cursor: pointer; transition: color .2s; background: none; border: none; text-align: left; padding: 6px 0; }
+.dm-link:hover, .dm-link.on { color: var(--txt); }
+
+
+
+/* ─ PAGES ─ */
+.pg { display: none; padding-top: 88px; }
+.pg.on { display: block; }
+
+/* ─ HERO ─ */
+.hero { min-height: calc(100vh - 88px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 44px; position: relative; overflow: hidden; }
+.hero-glow { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 60% 45% at 50% 40%, rgba(255,69,0,.09) 0%, transparent 70%); }
+.hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(3.2rem, 9vw, 6.5rem); font-weight: 600; line-height: 1.03; letter-spacing: -.025em; margin-bottom: 22px; }
+.hero h1 em { font-style: italic; font-weight: 400; color: rgba(255,255,255,.5); }
+.hero-sub { font-size: 16px; color: var(--sub); max-width: 440px; margin: 0 auto 44px; font-weight: 300; line-height: 1.7; }
+.hero-meta { display: flex; align-items: center; gap: 14px; font-size: 11px; color: var(--dim); letter-spacing: .14em; text-transform: uppercase; }
+.hero-meta .sep { width: 1px; height: 11px; background: var(--dim); flex-shrink: 0; }
+
+/* ─ HOME ─ */
+.home-wrap { max-width: 1000px; margin: 0 auto; padding: 80px 44px 100px; }
+.stitle { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 600; line-height: 1.08; letter-spacing: -.02em; margin-bottom: 48px; }
+.stitle em { font-style: italic; font-weight: 400; color: rgba(255,255,255,.45); }
+.tcards { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-bottom: 72px; }
+.tcard { background: var(--card); border: 1px solid var(--bd); border-radius: 26px; padding: 30px 26px; cursor: pointer; display: flex; flex-direction: column; gap: 11px; transition: border-color .3s, transform .3s, box-shadow .3s; }
+.tcard:hover { border-color: rgba(255,255,255,.18); transform: translateY(-5px); box-shadow: 0 24px 48px rgba(0,0,0,.45); }
+.tcard.hot { background: var(--acc); border-color: var(--acc); }
+.tcard.hot:hover { box-shadow: 0 24px 48px rgba(255,69,0,.28); }
+.tc-num { font-size: 12px; color: var(--sub); font-weight: 500; letter-spacing: .05em; align-self: flex-end; }
+.tcard.hot .tc-num { color: rgba(0,0,0,.45); }
+.tc-ico { font-size: 28px; }
+.tc-h { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 600; line-height: 1.15; }
+.tcard.hot .tc-h { color: #000; }
+.tc-p { font-size: 13.5px; color: var(--sub); line-height: 1.6; font-weight: 300; }
+.tcard.hot .tc-p { color: rgba(0,0,0,.58); }
+.tc-cta { margin-top: auto; font-size: 12.5px; color: var(--dim); font-weight: 500; }
+.tcard.hot .tc-cta { color: rgba(0,0,0,.5); }
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.stat { background: var(--card); border: 1px solid var(--bd); border-radius: 20px; padding: 24px 28px; }
+.sn { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; line-height: 1; margin-bottom: 6px; }
+.sl { font-size: 11.5px; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; font-weight: 500; }
+.team-card { background: var(--card); border: 1px solid var(--bd); border-radius: 24px; padding: 36px; text-align: center; margin-top: 80px; }
+.team-card .tc-tag { font-size: 10.5px; text-transform: uppercase; letter-spacing: .14em; color: var(--dim); margin-bottom: 16px; }
+.team-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+.team-card p { font-size: 14px; color: var(--sub); font-weight: 300; }
+
+/* ─ PAGE ─ */
+.pg-wrap { max-width: 740px; margin: 0 auto; padding: 64px 44px 100px; }
+.pg-title { font-family: 'Playfair Display', serif; font-size: clamp(2.6rem, 6.5vw, 4.2rem); font-weight: 600; line-height: 1.03; letter-spacing: -.025em; margin-bottom: 10px; }
+.pg-title em { font-style: italic; font-weight: 400; color: rgba(255,255,255,.45); }
+.pg-sub { font-size: 15px; color: var(--sub); margin-bottom: 52px; font-weight: 300; }
+
+/* ─ FORM ─ */
+.flabel { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em; color: var(--dim); margin-bottom: 11px; }
+.finput, .ftarea { width: 100%; background: var(--card); border: 1px solid var(--bd); border-radius: 14px; color: var(--txt); font-family: inherit; font-size: 15px; padding: 16px 20px; transition: border-color .2s, box-shadow .2s; }
+.finput:focus, .ftarea:focus { outline: none; border-color: rgba(255,255,255,.2); box-shadow: 0 0 0 3px rgba(255,255,255,.04); }
+.ftarea { resize: vertical; min-height: 145px; font-weight: 300; line-height: 1.65; }
+.fgrp { margin-bottom: 28px; }
+.go-btn { background: var(--acc); color: #fff; border: none; border-radius: 99px; padding: 14px 32px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: transform .2s, box-shadow .2s; position: relative; overflow: hidden; }
+.go-btn::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,.12); opacity: 0; transition: opacity .2s; }
+.go-btn:hover::before { opacity: 1; }
+.go-btn:hover { transform: scale(1.03); box-shadow: 0 8px 26px rgba(255,69,0,.38); }
+.go-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.ghost-btn { background: transparent; color: var(--hgh); border: 1px solid rgba(244,63,94,.3); border-radius: 99px; padding: 10px 24px; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background .2s; }
+.ghost-btn:hover { background: rgba(244,63,94,.08); }
+
+/* ─ LOADING ─ */
+.loader { display: none; align-items: center; gap: 14px; margin-top: 36px; padding: 24px 28px; background: var(--card); border: 1px solid var(--bd); border-radius: 18px; }
+.loader.show { display: flex; }
+.spin { width: 22px; height: 22px; border: 2px solid var(--bd); border-top-color: var(--acc); border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-txt { font-size: 14px; color: var(--sub); font-weight: 300; }
+.loader-txt strong { color: var(--txt); font-weight: 500; }
+
+/* ─ RESULT ─ */
+.result { margin-top: 36px; border-radius: 24px; padding: 34px 38px; display: none; }
+.result.show { display: block; animation: fadeup .55s cubic-bezier(.22,1,.36,1) both; }
+.rdanger { background: rgba(244,63,94,.05); border: 1px solid rgba(244,63,94,.22); }
+.rsafe   { background: rgba(34,197,94,.05);  border: 1px solid rgba(34,197,94,.2); }
+.rmed    { background: rgba(245,158,11,.05); border: 1px solid rgba(245,158,11,.2); }
+@keyframes fadeup { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+.rv-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.rv { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 600; line-height: 1.1; }
+.rv-hint { font-size: 14px; color: var(--sub); margin-bottom: 28px; font-weight: 300; }
+.rule { width: 100%; height: 1px; background: var(--bd); margin: 22px 0; }
+.ind-h { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: var(--dim); margin-bottom: 14px; }
+
+/* ─ VT STATS BAR ─ */
+.vt-bar { display: flex; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 14px; gap: 2px; }
+.vt-seg { height: 100%; border-radius: 99px; min-width: 4px; }
+.vt-counts { display: flex; gap: 20px; font-size: 13px; margin-bottom: 24px; }
+.vt-counts span { display: flex; align-items: center; gap: 6px; font-weight: 300; }
+.vt-counts strong { font-weight: 600; }
+
+/* ─ ENGINE TABLE ─ */
+.eng-table { display: flex; flex-direction: column; gap: 7px; margin-bottom: 24px; }
+.eng-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 9px 14px; background: rgba(244,63,94,.05); border: 1px solid rgba(244,63,94,.12); border-radius: 9px; font-size: 13.5px; }
+.eng-name { color: rgba(255,255,255,.65); font-weight: 400; }
+.eng-cat { font-size: 12px; font-weight: 600; color: var(--hgh); }
+.eng-safe-row { background: rgba(34,197,94,.04); border-color: rgba(34,197,94,.12); }
+.eng-safe-row .eng-cat { color: var(--low); }
+
+/* ─ VT LINK ─ */
+.vt-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); margin-top: 16px; text-decoration: none; transition: color .2s; }
+.vt-link:hover { color: var(--acc); }
+
+/* ─ INDS ─ */
+.inds { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.ind { display: grid; grid-template-columns: 24px 1fr; gap: 11px; align-items: start; padding: 12px 16px; background: rgba(244,63,94,.05); border: 1px solid rgba(244,63,94,.13); border-radius: 10px; font-size: 14px; color: rgba(255,255,255,.65); font-weight: 300; }
+.ind-bullet { width: 20px; height: 20px; border-radius: 99px; background: rgba(244,63,94,.18); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--hgh); flex-shrink: 0; }
+.ai-wrap { background: rgba(255,69,0,.07); border: 1px solid rgba(255,69,0,.18); border-radius: 14px; padding: 20px 24px; }
+.ai-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .14em; color: var(--acc); margin-bottom: 10px; }
+.ai-body { font-size: 14px; color: rgba(255,255,255,.6); line-height: 1.78; font-weight: 300; white-space: pre-line; }
+
+/* ─ BADGES ─ */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 99px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.b-hgh { background: rgba(244,63,94,.1); color: var(--hgh); border: 1px solid rgba(244,63,94,.25); }
+.b-med { background: rgba(245,158,11,.1); color: var(--med); border: 1px solid rgba(245,158,11,.25); }
+.b-low { background: rgba(34,197,94,.1); color: var(--low); border: 1px solid rgba(34,197,94,.25); }
+
+/* ─ FILE ─ */
+.icard { background: var(--card); border: 1px solid var(--bd); border-radius: 20px; padding: 28px 32px; }
+.check-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.check-item { display: flex; gap: 12px; align-items: center; font-size: 14.5px; color: var(--sub); font-weight: 300; }
+.warnbox { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.2); border-radius: 13px; padding: 15px 20px; display: flex; gap: 11px; align-items: flex-start; font-size: 13.5px; color: #b87800; margin-bottom: 28px; line-height: 1.55; }
+
+/* ─ HIST ─ */
+.hist-wrap { max-width: 940px; margin: 0 auto; padding: 64px 44px 100px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; padding: 10px 16px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); border-bottom: 1px solid var(--bd); font-weight: 600; }
+.tbl td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--sub); vertical-align: middle; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: rgba(255,255,255,.02); }
+.td-t { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.err-box { background: rgba(244,63,94,.06); border: 1px solid rgba(244,63,94,.2); border-radius: 14px; padding: 18px 22px; font-size: 14px; color: var(--sub); display: none; margin-top: 24px; }
+.err-box.show { display: block; }
+
+/* ─ PAGE TRANSITIONS ─ */
+@keyframes pg-in  { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pg-out { from { opacity:1; transform:translateY(0); }   to { opacity:0; transform:translateY(-10px); } }
+.pg-entering { animation: pg-in  .38s cubic-bezier(.22,1,.36,1) both; }
+.pg-leaving  { animation: pg-out .22s ease-in both; pointer-events:none; }
+
+/* ─ CURSOR GLOW ─ */
+#cglow { position:fixed; width:420px; height:420px; border-radius:50%; pointer-events:none; z-index:1; background:radial-gradient(circle, rgba(255,69,0,.07) 0%, transparent 65%); transform:translate(-50%,-50%); transition:left .18s ease-out, top .18s ease-out; will-change:left,top; }
+@media (hover:none) { #cglow { display:none; } }
+
+/* ─ BG ORBS ─ */
+.orb { position:fixed; border-radius:50%; pointer-events:none; z-index:0; filter:blur(100px); animation:orb-drift linear infinite; }
+.orb1 { width:560px; height:560px; background:rgba(255,69,0,.055); top:-120px; right:-140px; animation-duration:30s; }
+.orb2 { width:440px; height:440px; background:rgba(80,0,180,.04); bottom:-80px; left:-160px; animation-duration:38s; animation-delay:-15s; }
+@keyframes orb-drift { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(30px,-45px) scale(1.05)} 50%{transform:translate(-20px,20px) scale(.97)} 75%{transform:translate(15px,-10px) scale(1.03)} }
+
+/* ─ RIPPLE ─ */
+.go-btn, .nav-btn { overflow:hidden; }
+.rpl { position:absolute; border-radius:50%; background:rgba(255,255,255,.25); width:6px; height:6px; transform:scale(0); pointer-events:none; animation:rpl .6s ease-out forwards; }
+@keyframes rpl { to { transform:scale(60); opacity:0; } }
+
+/* ─ PROGRESS BAR ─ */
+#pbar { position:fixed; top:0; left:0; height:2px; background:var(--acc); z-index:300; width:0%; pointer-events:none; box-shadow:0 0 10px var(--acc); transition:width .25s ease,opacity .5s ease; opacity:0; }
+
+/* ─ HERO WORD STAGGER ─ */
+.hw { display:inline-block; opacity:0; transform:translateY(18px); animation:hw .72s cubic-bezier(.22,1,.36,1) forwards; }
+@keyframes hw { to { opacity:1; transform:translateY(0); } }
+
+/* ─ VT BAR ANIM ─ */
+@keyframes bar-grow { from{width:0} }
+.vt-seg { animation:bar-grow .9s cubic-bezier(.22,1,.36,1) both; }
+
+/* ─ STAT PULSE ─ */
+@keyframes stat-pop { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+.sn.pop { animation:stat-pop .4s cubic-bezier(.22,1,.36,1); }
+
+/* ─ FADE BADGE ─ */
+@keyframes badge-in { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:scale(1)} }
+.badge { animation:badge-in .35s cubic-bezier(.22,1,.36,1) both; }
+
+/* ─ RESPONSIVE ─ */
+@media (max-width: 900px) { .tcards, .stats { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px) {
+  .topnav, .topnav.stuck { padding-left: 24px; padding-right: 24px; }
+  .nav-links { display: none; }
+  .nav-btn { display: none; }
+  .hamburger { display: block; }
+  .hero, .home-wrap, .pg-wrap, .hist-wrap { padding-left: 24px; padding-right: 24px; }
+  .tcards, .stats { grid-template-columns: 1fr; }
+  .result { padding: 24px 20px; }
+}
+</style>
+
+<!-- PROGRESS BAR -->
+<div id="pbar"></div>
+<!-- CURSOR GLOW -->
+<div id="cglow"></div>
+<!-- BG ORBS -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<!-- NOISE -->
+<svg class="noise" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="4" stitchTiles="stitch"/></filter>
+  <rect width="100%" height="100%" filter="url(#grain)"/>
+</svg>
+
+
+<!-- NAV -->
+<nav class="topnav" id="tnav">
+  <div class="nav-logo" onclick="go('home')">CyberGuard.</div>
+  <div class="nav-links">
+    <button class="nl on" id="nl-home" onclick="go('home')">Início</button>
+    <button class="nl" id="nl-url"  onclick="go('url')">Verificar Link</button>
+    <button class="nl" id="nl-msg"  onclick="go('msg')">Verificar Mensagem</button>
+    <button class="nl" id="nl-hist" onclick="go('hist')">Histórico</button>
+  </div>
+  <button class="nav-btn" onclick="go('url')">Verificar Agora</button>
+  <button class="hamburger" id="ham" onclick="toggleDrawer()">☰</button>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="drawer" id="drawer">
+  <button class="dm-link on" id="dm-home" onclick="go('home');toggleDrawer()">Início</button>
+  <button class="dm-link" id="dm-url"  onclick="go('url');toggleDrawer()">Verificar Link</button>
+  <button class="dm-link" id="dm-msg"  onclick="go('msg');toggleDrawer()">Verificar Mensagem</button>
+  <button class="dm-link" id="dm-file" onclick="go('file');toggleDrawer()">Verificar Ficheiro</button>
+  <button class="dm-link" id="dm-hist" onclick="go('hist');toggleDrawer()">Histórico</button>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div class="pg on" id="pg-home">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div>
+      <h1 class="serif">
+        <span class="hw" style="animation-delay:0s">Navega</span>&#32;<span class="hw" style="animation-delay:.13s">com</span><br><em><span class="hw" style="animation-delay:.26s">segurança.</span></em>
+      </h1>
+    </div>
+    <div class="reveal" style="transition-delay:.18s">
+      <p class="hero-sub">Cola um link, mensagem ou ficheiro suspeito — a IA e o VirusTotal analisam os sinais que passam despercebidos.</p>
+    </div>
+    <div class="reveal hero-meta" style="transition-delay:.36s">
+      <span id="clk">--:-- --</span><span class="sep"></span>
+      <span>CyberGuard AI</span><span class="sep"></span>
+      <span>VirusTotal</span>
+    </div>
+  </section>
+  <div class="home-wrap">
+    <div class="reveal" style="margin-bottom:48px">
+      <h2 class="stitle serif">Três ferramentas.<br><em>Um objetivo.</em></h2>
+    </div>
+    <div class="tcards">
+      <div class="tcard hot reveal" onclick="go('url')">
+        <span class="tc-num">01</span>
+        <div class="tc-ico">🔗</div>
+        <div class="tc-h serif">Verificar Link</div>
+        <div class="tc-p">URL suspeito? O VirusTotal + 70 motores analisam em tempo real.</div>
+        <div class="tc-cta">Verificar agora →</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.1s" onclick="go('msg')">
+        <span class="tc-num">02</span>
+        <div class="tc-ico">✉️</div>
+        <div class="tc-h serif">Verificar Mensagem</div>
+        <div class="tc-p">Identifica links perigosos e sinais de engenharia social em emails e SMS.</div>
+        <div class="tc-cta">Verificar agora →</div>
+      </div>
+      <div class="tcard reveal" style="transition-delay:.2s" onclick="go('file')">
+        <span class="tc-num">03</span>
+        <div class="tc-ico">📁</div>
+        <div class="tc-h serif">Verificar Ficheiro</div>
+        <div class="tc-p">Upload seguro para análise com 70+ motores antivírus do VirusTotal.</div>
+        <div class="tc-cta">Verificar agora →</div>
+      </div>
+    </div>
+    <div class="stats reveal" id="home-stats">
+      <div class="stat"><div class="sn serif" style="color:var(--acc)" id="s-total">0</div><div class="sl">Análises feitas</div></div>
+      <div class="stat"><div class="sn serif" style="color:var(--hgh)" id="s-danger">0</div><div class="sl">Ameaças detetadas</div></div>
+      <div class="stat"><div class="sn serif" style="color:var(--low)" id="s-safe">0</div><div class="sl">Conteúdo seguro</div></div>
+    </div>
+    <div class="team-card reveal">
+      <div class="tc-tag">// equipa do projeto</div>
+      <h3 class="serif">Projeto Escolar 2024/25</h3>
+      <p>Desenvolvido por 4 alunos do 10.º ano · Programação e Sistemas de Informação</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ URL ═══ -->
+<div class="pg" id="pg-url">
+  <div class="pg-wrap">
+    <div class="reveal">
+      <h1 class="pg-title serif">Verificar<br><em>um link.</em></h1>
+      <p class="pg-sub">Cola o URL suspeito — será enviado ao VirusTotal e analisado por +70 motores.</p>
+    </div>
+    <div class="reveal" style="transition-delay:.15s">
+      <div class="fgrp">
+        <label class="flabel">URL a verificar</label>
+        <input class="finput" type="text" id="url-inp" placeholder="https://exemplo.com/link">
+      </div>
+      <button class="go-btn" id="url-btn" onclick="analyzeUrl()">Verificar este link →</button>
+    </div>
+    <div class="loader" id="url-loader">
+      <div class="spin"></div>
+      <div class="loader-txt"><strong id="url-loader-step">A enviar para o VirusTotal...</strong><br>Aguarda enquanto 70+ motores analisam o link.</div>
+    </div>
+    <div class="err-box" id="url-err"></div>
+    <div class="result" id="url-res">
+      <div class="rv-row">
+        <div class="rv serif" id="url-verdict"></div>
+        <span class="badge" id="url-badge"></span>
+      </div>
+      <div class="rv-hint" id="url-hint"></div>
+      <div class="rule"></div>
+      <div id="url-vt-block"></div>
+      <div id="url-local-block"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MSG ═══ -->
+<div class="pg" id="pg-msg">
+  <div class="pg-wrap">
+    <div class="reveal">
+      <h1 class="pg-title serif">Verificar<br><em>uma mensagem.</em></h1>
+      <p class="pg-sub">Cola o email ou SMS — detetamos links perigosos e técnicas de engenharia social.</p>
+    </div>
+    <div class="reveal" style="transition-delay:.15s">
+      <div class="fgrp">
+        <label class="flabel">Mensagem a verificar</label>
+        <textarea class="ftarea" id="msg-inp" placeholder="Cola aqui o texto da mensagem..."></textarea>
+      </div>
+      <button class="go-btn" id="msg-btn" onclick="analyzeMsg()">Analisar esta mensagem →</button>
+    </div>
+    <div class="loader" id="msg-loader">
+      <div class="spin"></div>
+      <div class="loader-txt"><strong id="msg-loader-step">A analisar...</strong><br>A verificar links e padrões de engenharia social.</div>
+    </div>
+    <div class="err-box" id="msg-err"></div>
+    <div class="result" id="msg-res">
+      <div class="rv-row">
+        <div class="rv serif" id="msg-verdict"></div>
+        <span class="badge" id="msg-badge"></span>
+      </div>
+      <div class="rv-hint" id="msg-hint"></div>
+      <div class="rule"></div>
+      <div id="msg-vt-block"></div>
+      <div id="msg-local-block"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FILE ═══ -->
+<div class="pg" id="pg-file">
+  <div class="pg-wrap">
+    <div class="reveal">
+      <h1 class="pg-title serif">Verificar<br><em>um ficheiro.</em></h1>
+      <p class="pg-sub">Envia para o VirusTotal — 70+ motores antivírus fazem a análise. Máx. 32MB na conta gratuita.</p>
+    </div>
+    <div class="reveal" style="transition-delay:.15s">
+      <div class="warnbox">
+        <span style="font-size:16px;flex-shrink:0">🔒</span>
+        <span>O ficheiro é enviado ao VirusTotal de forma segura. Os resultados são partilhados na base de dados pública do VirusTotal — não envies ficheiros confidenciais.</span>
+      </div>
+      <div class="fgrp">
+        <label class="flabel">Ficheiro a verificar</label>
+        <input class="finput" type="file" id="file-inp" style="cursor:pointer">
+      </div>
+      <button class="go-btn" id="file-btn" onclick="analyzeFile()">Verificar ficheiro →</button>
+    </div>
+    <div class="loader" id="file-loader">
+      <div class="spin"></div>
+      <div class="loader-txt"><strong id="file-loader-step">A enviar para o VirusTotal...</strong><br>O upload pode demorar alguns segundos.</div>
+    </div>
+    <div class="err-box" id="file-err"></div>
+    <div class="result" id="file-res">
+      <div class="rv-row">
+        <div class="rv serif" id="file-verdict"></div>
+        <span class="badge" id="file-badge"></span>
+      </div>
+      <div class="rv-hint" id="file-hint"></div>
+      <div class="rule"></div>
+      <div id="file-vt-block"></div>
+    </div>
+    <div style="margin-top:48px" class="reveal">
+      <div class="icard">
+        <div class="ind-h" style="margin-bottom:18px">O que verificamos</div>
+        <ul class="check-list">
+          <li class="check-item"><span style="color:var(--low);font-size:16px;width:20px;flex-shrink:0">✓</span>Nome, extensão e tamanho</li>
+          <li class="check-item"><span style="color:var(--low);font-size:16px;width:20px;flex-shrink:0">✓</span>Hash SHA-256 — impressão digital única</li>
+          <li class="check-item"><span style="color:var(--low);font-size:16px;width:20px;flex-shrink:0">✓</span>70+ motores antivírus via VirusTotal</li>
+          <li class="check-item"><span style="color:var(--med);font-size:16px;width:20px;flex-shrink:0">⚠</span>Os resultados ficam na base de dados pública do VT</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HIST ═══ -->
+<div class="pg" id="pg-hist">
+  <div class="hist-wrap">
+    <div class="reveal" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:52px;flex-wrap:wrap">
+      <div>
+        <h1 class="pg-title serif" style="margin-bottom:8px">Histórico.</h1>
+        <p class="pg-sub" style="margin-bottom:0" id="hist-count">0 análises realizadas</p>
+      </div>
+      <button class="ghost-btn" onclick="clearHistory()">Apagar histórico</button>
+    </div>
+    <div class="reveal icard" style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Tipo</th><th>Conteúdo</th><th>Resultado</th><th>Data</th></tr></thead>
+        <tbody id="hist-body"><tr><td colspan="5" style="text-align:center;color:var(--dim);padding:32px">Nenhuma análise ainda</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════ */
+const VT_KEY = '62b147226a28bcb316836994379befb8f66e786a2942669c2a5768bb665c2cc1';
+function getKey() { return VT_KEY; }
+
+let history = [];
+try { history = JSON.parse(localStorage.getItem('cg_history') || '[]'); } catch {}
+function saveHistory() { try { localStorage.setItem('cg_history', JSON.stringify(history.slice(0, 100))); } catch {} }
+function addHistory(type, content, risk) {
+  const entry = { type, content, risk, date: new Date().toLocaleString('pt-PT', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) };
+  history.unshift(entry);
+  saveHistory();
+  updateStats();
+  renderHistory();
+}
+function countUp(el, target, delay) {
+  const prev = parseInt(el.textContent) || 0;
+  if (prev === target) return;
+  setTimeout(() => {
+    const start = performance.now();
+    const dur = 700;
+    function step(now) {
+      const t = Math.min((now - start) / dur, 1);
+      const e = 1 - Math.pow(1 - t, 3);
+      el.textContent = Math.round(prev + (target - prev) * e);
+      if (t < 1) requestAnimationFrame(step);
+      else { el.textContent = target; el.classList.add('pop'); setTimeout(() => el.classList.remove('pop'), 400); }
+    }
+    requestAnimationFrame(step);
+  }, delay || 0);
+}
+function updateStats() {
+  const d = history.filter(h => h.risk === 'high').length;
+  const s = history.filter(h => h.risk === 'low').length;
+  countUp(document.getElementById('s-total'),  history.length, 0);
+  countUp(document.getElementById('s-danger'), d, 100);
+  countUp(document.getElementById('s-safe'),   s, 200);
+}
+function renderHistory() {
+  document.getElementById('hist-count').textContent = history.length + ' análises realizadas';
+  const icons = { url: '🔗', msg: '✉️', file: '📁' };
+  const labels = { url: 'Link', msg: 'Mensagem', file: 'Ficheiro' };
+  const tbody = document.getElementById('hist-body');
+  if (!history.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:32px">Nenhuma análise ainda</td></tr>';
+    return;
+  }
+  tbody.innerHTML = history.map((h, i) => `
+    <tr>
+      <td style="color:var(--dim)">${history.length - i}</td>
+      <td>${icons[h.type] || '?'} ${labels[h.type] || ''}</td>
+      <td class="td-t">${esc(h.content)}</td>
+      <td>${badgeHtml(h.risk)}</td>
+      <td style="white-space:nowrap;font-size:13px">${esc(h.date)}</td>
+    </tr>`).join('');
+}
+function clearHistory() {
+  if (!confirm('Apagar todo o histórico?')) return;
+  history = [];
+  saveHistory();
+  updateStats();
+  renderHistory();
+}
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function badgeHtml(risk) {
+  if (risk === 'high')   return '<span class="badge b-hgh">⚠ Perigoso</span>';
+  if (risk === 'medium') return '<span class="badge b-med">👀 Suspeito</span>';
+  return '<span class="badge b-low">✓ Seguro</span>';
+}
+
+
+/* ══════════════════════════════════════════════
+   PROGRESS BAR
+══════════════════════════════════════════════ */
+const pbar = document.getElementById('pbar');
+let pbarTimer;
+function pbarStart() {
+  clearInterval(pbarTimer);
+  pbar.style.opacity = '1';
+  pbar.style.transition = 'width .25s ease, opacity .5s ease';
+  let w = 5;
+  pbar.style.width = w + '%';
+  pbarTimer = setInterval(() => {
+    w = Math.min(w + (90 - w) * 0.08, 88);
+    pbar.style.width = w + '%';
+  }, 300);
+}
+function pbarDone() {
+  clearInterval(pbarTimer);
+  pbar.style.width = '100%';
+  setTimeout(() => { pbar.style.opacity = '0'; setTimeout(() => { pbar.style.width = '0%'; pbar.style.transition = 'none'; }, 500); }, 300);
+}
+
+/* ══════════════════════════════════════════════
+   VIRUSTOTAL API
+══════════════════════════════════════════════ */
+const VT = 'https://www.virustotal.com/api/v3';
+
+class CorsError extends Error { constructor() { super('CORS'); this.isCors = true; } }
+
+async function vtPost(path, body, isForm) {
+  const k = getKey();
+  const opts = { method: 'POST', headers: { 'x-apikey': k }, mode: 'cors', credentials: 'omit' };
+  if (isForm instanceof FormData) { opts.body = isForm; }
+  else { opts.headers['content-type'] = 'application/x-www-form-urlencoded'; opts.body = body; }
+  let r;
+  try { r = await fetch(VT + path, opts); }
+  catch { throw new CorsError(); }
+  if (r.status === 429) throw new Error('Limite da API atingido. Aguarda 1 minuto (plano gratuito: 4 pedidos/min).');
+  if (!r.ok) { const t = await r.text(); throw new Error('Erro VirusTotal: ' + r.status + ' — ' + t.slice(0,200)); }
+  return r.json();
+}
+async function vtGet(path) {
+  const k = getKey();
+  let r;
+  try { r = await fetch(VT + path, { headers: { 'x-apikey': k }, mode: 'cors', credentials: 'omit' }); }
+  catch { throw new CorsError(); }
+  if (r.status === 429) throw new Error('Limite da API atingido. Aguarda 1 minuto.');
+  if (!r.ok) throw new Error('Erro VirusTotal: ' + r.status);
+  return r.json();
+}
+async function waitAnalysis(id, setStep) {
+  let tries = 0;
+  while (tries < 20) {
+    await new Promise(res => setTimeout(res, 2500));
+    const data = await vtGet('/analyses/' + id);
+    const status = data.data.attributes.status;
+    setStep('A aguardar resultados' + '.'.repeat((tries % 3) + 1));
+    if (status === 'completed') return data.data.attributes;
+    tries++;
+  }
+  throw new Error('Análise demorou demasiado. Tenta novamente.');
+}
+
+/* ══════════════════════════════════════════════
+   RENDER RESULTS
+══════════════════════════════════════════════ */
+function renderVtStats(stats, analysisId, type) {
+  const mal = stats.malicious || 0;
+  const sus = stats.suspicious || 0;
+  const har = (stats.harmless || 0) + (stats.undetected || 0);
+  const total = mal + sus + har + (stats.failure || 0) + (stats.timeout || 0);
+  const pMal = total ? (mal / total * 100).toFixed(1) : 0;
+  const pSus = total ? (sus / total * 100).toFixed(1) : 0;
+  const pHar = total ? (har / total * 100).toFixed(1) : 0;
+  const vtUrl = type === 'url'
+    ? 'https://www.virustotal.com/gui/url/' + analysisId.split('-')[1]
+    : 'https://www.virustotal.com/gui/file/' + analysisId.split('-')[1];
+  return `
+    <div class="ind-h">VirusTotal — ${total} motores</div>
+    <div class="vt-bar">
+      ${mal ? `<div class="vt-seg" style="background:var(--hgh);width:${pMal}%"></div>` : ''}
+      ${sus ? `<div class="vt-seg" style="background:var(--med);width:${pSus}%"></div>` : ''}
+      ${har ? `<div class="vt-seg" style="background:var(--low);width:${pHar}%;flex:${har?1:0}"></div>` : ''}
+    </div>
+    <div class="vt-counts">
+      <span><strong style="color:var(--hgh)">${mal}</strong> maliciosos</span>
+      <span><strong style="color:var(--med)">${sus}</strong> suspeitos</span>
+      <span><strong style="color:var(--low)">${har}</strong> limpos</span>
+    </div>`;
+}
+function renderEngines(results, max) {
+  const detections = Object.entries(results || {})
+    .filter(([, v]) => v.category === 'malicious' || v.category === 'suspicious')
+    .slice(0, max || 5);
+  if (!detections.length) return '';
+  return `
+    <div class="ind-h">Deteções</div>
+    <div class="eng-table">
+      ${detections.map(([name, v]) => `
+        <div class="eng-row">
+          <span class="eng-name">${esc(name)}</span>
+          <span class="eng-cat">${esc(v.result || v.category)}</span>
+        </div>`).join('')}
+    </div>`;
+}
+function getVtRisk(stats) {
+  const mal = stats.malicious || 0;
+  const sus = stats.suspicious || 0;
+  if (mal >= 3) return 'high';
+  if (mal >= 1 || sus >= 3) return 'medium';
+  return 'low';
+}
+function setResultStyle(id, risk) {
+  const el = document.getElementById(id);
+  el.classList.remove('rdanger','rsafe','rmed');
+  el.classList.add(risk === 'high' ? 'rdanger' : risk === 'medium' ? 'rmed' : 'rsafe');
+  el.classList.add('show');
+}
+function setVerdict(prefix, risk, stats, subject) {
+  const mal = stats ? (stats.malicious || 0) : 0;
+  const sus = stats ? (stats.suspicious || 0) : 0;
+  const verdicts = {
+    high:   ['Cuidado — parece uma ameaça.', `${mal} motor${mal!==1?'es':''} do VirusTotal detetaram conteúdo malicioso.`],
+    medium: ['Suspeito — tem cuidado.', `${sus} motor${sus!==1?'es':''} assinalaram isto como suspeito.`],
+    low:    ['Parece seguro.', 'Nenhum motor de antivírus detetou ameaças.']
+  };
+  const [v, h] = verdicts[risk];
+  document.getElementById(prefix + '-verdict').textContent = v;
+  document.getElementById(prefix + '-hint').textContent = h;
+  const bd = document.getElementById(prefix + '-badge');
+  if (risk === 'high')   { bd.className = 'badge b-hgh'; bd.textContent = '⚠ Risco elevado'; }
+  if (risk === 'medium') { bd.className = 'badge b-med'; bd.textContent = '👀 Suspeito'; }
+  if (risk === 'low')    { bd.className = 'badge b-low'; bd.textContent = '✓ Seguro'; }
+}
+
+/* ══════════════════════════════════════════════
+   URL ANALYSIS
+══════════════════════════════════════════════ */
+async function analyzeUrl() {
+  const url = document.getElementById('url-inp').value.trim();
+  if (!url) { alert('Introduz um URL primeiro.'); return; }
+  const btn = document.getElementById('url-btn');
+  const loader = document.getElementById('url-loader');
+  const res = document.getElementById('url-res');
+  const err = document.getElementById('url-err');
+  btn.disabled = true;
+  res.classList.remove('show');
+  err.classList.remove('show');
+  loader.classList.add('show');
+  pbarStart();
+  const setStep = t => document.getElementById('url-loader-step').textContent = t;
+  try {
+    setStep('A enviar para o VirusTotal...');
+    try {
+      const body2 = 'url=' + encodeURIComponent(url);
+      const submit = await vtPost('/urls', body2);
+      const analysisId = submit.data.id;
+      const attrs = await waitAnalysis(analysisId, setStep);
+      loader.classList.remove('show');
+      const risk = getVtRisk(attrs.stats);
+      setVerdict('url', risk, attrs.stats, url);
+      const vtLink = 'https://www.virustotal.com/gui/url/' + btoa(url).replace(/=/g,'').slice(0,64);
+      document.getElementById('url-vt-block').innerHTML =
+        renderVtStats(attrs.stats, analysisId, 'url') +
+        renderEngines(attrs.results, 6) +
+        `<a class="vt-link" href="${vtLink}" target="_blank" rel="noopener">↗ Ver relatório completo no VirusTotal</a>`;
+      const local = localUrlAnalysis(url);
+      document.getElementById('url-local-block').innerHTML = local.indicators.length ? '<div class="rule"></div>' + renderLocalIndicators(local.indicators) : '';
+      setResultStyle('url-res', risk);
+      addHistory('url', url, risk);
+    } catch (vtErr) {
+      // CORS / network fallback → local analysis
+      loader.classList.remove('show');
+      const { risk, indicators } = localUrlAnalysis(url);
+      const bd = document.getElementById('url-badge');
+      document.getElementById('url-verdict').textContent = risk === 'high' ? 'Parece suspeito.' : risk === 'medium' ? 'Alguns sinais de alerta.' : 'Parece seguro.';
+      document.getElementById('url-hint').textContent = vtErr.isCors ? 'VirusTotal indisponível neste ambiente (CORS) — análise feita localmente.' : vtErr.message;
+      if (risk === 'high')   { bd.className = 'badge b-hgh'; bd.textContent = '⚠ Risco elevado'; }
+      if (risk === 'medium') { bd.className = 'badge b-med'; bd.textContent = '👀 Suspeito'; }
+      if (risk === 'low')    { bd.className = 'badge b-low'; bd.textContent = '✓ Parece OK'; }
+      document.getElementById('url-vt-block').innerHTML = vtErr.isCors
+        ? `<div class="ai-wrap" style="margin-bottom:20px"><div class="ai-tag">⚠ VirusTotal indisponível</div><div class="ai-body">O browser bloqueou a ligação à API do VirusTotal (CORS). Para usar o VT, corre esta app num servidor próprio. A análise abaixo é feita localmente.</div></div>`
+        : '';
+      document.getElementById('url-local-block').innerHTML = renderLocalIndicators(indicators);
+      setResultStyle('url-res', risk);
+      addHistory('url', url, risk);
+    }
+  } catch (e) {
+    loader.classList.remove('show');
+    err.textContent = e.message;
+    err.classList.add('show');
+    pbarDone();
+  } finally {
+    btn.disabled = false;
+    pbarDone();
+  }
+}
+
+function localUrlAnalysis(url) {
+  const indicators = [];
+  try {
+    const u = new URL(url.startsWith('http') ? url : 'https://' + url);
+    if (u.protocol === 'http:') indicators.push('Protocolo HTTP sem encriptação (não HTTPS)');
+    if (/^\d+\.\d+\.\d+\.\d+/.test(u.hostname)) indicators.push('O host é um endereço IP direto — sinal suspeito');
+    const badTlds = ['.xyz','.top','.click','.gq','.tk','.ml','.cf','.work','.loan','.win'];
+    if (badTlds.some(t => u.hostname.endsWith(t))) indicators.push('Extensão de domínio frequentemente usada em fraude (' + u.hostname.split('.').pop() + ')');
+    const brands = ['paypal','amazon','google','microsoft','apple','facebook','netflix','mbway','ctt','bankinter','cgd','millennium'];
+    const parts = u.hostname.split('.');
+    const main = parts.slice(-3).join('.');
+    brands.forEach(b => { if (main.includes(b) && !main.startsWith(b + '.com') && !main.startsWith('www.' + b)) indicators.push('Possível imitação da marca "' + b + '"'); });
+    if (url.includes('@')) indicators.push('Símbolo @ no URL — tática para esconder o destino real');
+    if (url.length > 100) indicators.push('URL muito longo (' + url.length + ' carateres)');
+  } catch {}
+  const risk = indicators.length >= 3 ? 'high' : indicators.length >= 1 ? 'medium' : 'low';
+  return { risk, indicators };
+}
+function renderLocalIndicators(indicators) {
+  if (!indicators.length) return '';
+  return `<div class="ind-h">Análise local</div>
+    <ul class="inds">${indicators.map(i => `<li class="ind"><div class="ind-bullet">!</div><span>${esc(i)}</span></li>`).join('')}</ul>`;
+}
+
+/* ══════════════════════════════════════════════
+   MESSAGE ANALYSIS
+══════════════════════════════════════════════ */
+async function analyzeMsg() {
+  const text = document.getElementById('msg-inp').value.trim();
+  if (!text) { alert('Cola uma mensagem primeiro.'); return; }
+  const btn = document.getElementById('msg-btn');
+  const loader = document.getElementById('msg-loader');
+  const res = document.getElementById('msg-res');
+  const err = document.getElementById('msg-err');
+  btn.disabled = true;
+  res.classList.remove('show');
+  err.classList.remove('show');
+  loader.classList.add('show');
+  pbarStart();
+  const setStep = t => document.getElementById('msg-loader-step').textContent = t;
+  try {
+    const local = localMsgAnalysis(text);
+    const urls = extractUrls(text);
+    let vtBlocks = '';
+    let maxRisk = local.risk;
+    let corsBlocked = false;
+    if (getKey() && urls.length) {
+      setStep('A verificar ' + urls.length + ' link(s) no VirusTotal...');
+      for (const u of urls.slice(0, 3)) {
+        try {
+          const body = 'url=' + encodeURIComponent(u);
+          const submit = await vtPost('/urls', body);
+          const attrs = await waitAnalysis(submit.data.id, setStep);
+          const urlRisk = getVtRisk(attrs.stats);
+          if (urlRisk === 'high' && maxRisk !== 'high') maxRisk = 'high';
+          else if (urlRisk === 'medium' && maxRisk === 'low') maxRisk = 'medium';
+          vtBlocks += `<div style="margin-bottom:16px"><div class="ind-h">Link: ${esc(u.slice(0,60))}${u.length>60?'…':''}</div>${renderVtStats(attrs.stats, submit.data.id, 'url')}${renderEngines(attrs.results, 3)}</div>`;
+        } catch(e2) { if (e2.isCors) { corsBlocked = true; break; } }
+      }
+    }
+    if (corsBlocked) {
+      vtBlocks = `<div class="ai-wrap" style="margin-bottom:20px"><div class="ai-tag">⚠ VirusTotal indisponível</div><div class="ai-body">O browser bloqueou a ligação à API (CORS). A análise abaixo é feita localmente.</div></div>`;
+    }
+    loader.classList.remove('show');
+    setVerdict('msg', maxRisk, null, text);
+    if (maxRisk === 'high')   { document.getElementById('msg-verdict').textContent = 'Muito suspeito — não sigas.'; document.getElementById('msg-hint').textContent = 'Detetámos sinais de phishing nesta mensagem.'; }
+    if (maxRisk === 'medium') { document.getElementById('msg-verdict').textContent = 'Alguns sinais de alerta.';   document.getElementById('msg-hint').textContent = 'Age com precaução antes de clicar ou responder.'; }
+    if (maxRisk === 'low')    { document.getElementById('msg-verdict').textContent = 'Parece legítimo.';            document.getElementById('msg-hint').textContent = 'Não detetámos padrões de fraude evidentes.'; }
+    document.getElementById('msg-vt-block').innerHTML = vtBlocks ? '<div class="rule"></div>' + vtBlocks : '';
+    document.getElementById('msg-local-block').innerHTML = local.indicators.length ? '<div class="rule"></div>' + renderLocalIndicators(local.indicators) : '';
+    setResultStyle('msg-res', maxRisk);
+    addHistory('msg', text.slice(0, 80), maxRisk);
+  } catch (e) {
+    loader.classList.remove('show');
+    err.textContent = e.message;
+    err.classList.add('show');
+    pbarDone();
+  } finally {
+    btn.disabled = false;
+    pbarDone();
+  }
+}
+
+function extractUrls(text) {
+  const re = /https?:\/\/[^\s"'<>)\]]+/gi;
+  return [...new Set(text.match(re) || [])];
+}
+function localMsgAnalysis(text) {
+  const indicators = [];
+  const t = text.toLowerCase();
+  if (/\burgente\b|\bimediatamente\b|\bagora mesmo\b|\bdias?\b.*\bexpirar\b|\bsuspend\b/.test(t)) indicators.push('"URGENTE" ou linguagem de pressão — cria pânico para agires sem pensar');
+  if (/password|palavra.passe|pin\b|credencial|confirme.*conta|valide.*dados/.test(t)) indicators.push('Pedido de password ou dados sensíveis — bancos e apps legítimas nunca pedem por SMS');
+  if (/caro cliente|prezado|dear customer|olá cliente/.test(t)) indicators.push('Saudação genérica — mensagens legítimas usam o teu nome');
+  if (/bit\.ly|tinyurl|goo\.gl|t\.co|ow\.ly|rb\.gy|cutt\.ly/.test(t)) indicators.push('Link encurtado — esconde o destino real');
+  if (/grátis|ganhou|prémio|parabéns|selecionado|recompensa/.test(t)) indicators.push('Promessa de prémio ou oferta — técnica clássica de phishing');
+  const risk = indicators.length >= 3 ? 'high' : indicators.length >= 1 ? 'medium' : 'low';
+  return { risk, indicators };
+}
+
+/* ══════════════════════════════════════════════
+   FILE ANALYSIS
+══════════════════════════════════════════════ */
+async function analyzeFile() {
+  const fileInput = document.getElementById('file-inp');
+  const file = fileInput.files[0];
+  if (!file) { alert('Escolhe um ficheiro primeiro.'); return; }
+  const key = getKey();
+  if (file.size > 32 * 1024 * 1024) { alert('Ficheiro demasiado grande (máx. 32MB para conta gratuita do VirusTotal).'); return; }
+  const btn = document.getElementById('file-btn');
+  const loader = document.getElementById('file-loader');
+  const res = document.getElementById('file-res');
+  const err = document.getElementById('file-err');
+  btn.disabled = true;
+  res.classList.remove('show');
+  err.classList.remove('show');
+  loader.classList.add('show');
+  pbarStart();
+  const setStep = t => document.getElementById('file-loader-step').textContent = t;
+  try {
+    setStep('A calcular SHA-256...');
+    const hash = await sha256(file);
+    setStep('A verificar hash no VirusTotal...');
+    let attrs = null;
+    let corsBlocked2 = false;
+    try {
+      try {
+        const known = await vtGet('/files/' + hash);
+        attrs = known.data.attributes;
+      } catch(e2) {
+        if (e2.isCors) throw e2;
+        setStep('A fazer upload (' + (file.size / 1024).toFixed(0) + ' KB)...');
+        const fd = new FormData();
+        fd.append('file', file);
+        const submit = await vtPost('/files', null, fd);
+        attrs = await waitAnalysis(submit.data.id, setStep);
+        attrs.sha256 = hash;
+      }
+    } catch(vtErr) {
+      if (vtErr.isCors) corsBlocked2 = true; else throw vtErr;
+    }
+    loader.classList.remove('show');
+    if (corsBlocked2 || !attrs) {
+      document.getElementById('file-verdict').textContent = 'Não foi possível verificar.';
+      document.getElementById('file-hint').textContent = 'O browser bloqueou a ligação ao VirusTotal (CORS).';
+      document.getElementById('file-badge').className = 'badge b-med';
+      document.getElementById('file-badge').textContent = '⚠ API indisponível';
+      document.getElementById('file-vt-block').innerHTML =
+        `<div class="ai-wrap"><div class="ai-tag">⚠ VirusTotal indisponível</div><div class="ai-body">O browser bloqueou a ligação à API (CORS). Para análise real, usa o VirusTotal directamente: virustotal.com\n\nSHA-256 do ficheiro:\n${hash}</div></div>`;
+      document.getElementById('file-res').classList.remove('rdanger','rsafe','rmed');
+      document.getElementById('file-res').classList.add('rmed','show');
+      addHistory('file', file.name, 'medium');
+    } else {
+      const risk = getVtRisk(attrs.last_analysis_stats || attrs.stats || {});
+      const stats = attrs.last_analysis_stats || attrs.stats || {};
+      setVerdict('file', risk, stats, file.name);
+      document.getElementById('file-vt-block').innerHTML =
+        renderVtStats(stats, 'file-' + hash, 'file') +
+        renderEngines(attrs.last_analysis_results || attrs.results, 6) +
+        `<a class="vt-link" href="https://www.virustotal.com/gui/file/${hash}" target="_blank" rel="noopener">↗ Ver relatório completo no VirusTotal</a>` +
+        `<div style="margin-top:12px;font-size:12.5px;color:var(--dim)">SHA-256: <span style="font-family:monospace;font-size:11px;word-break:break-all">${hash}</span></div>`;
+      setResultStyle('file-res', risk);
+      addHistory('file', file.name, risk);
+    }
+  } catch (e) {
+    loader.classList.remove('show');
+    err.textContent = e.message;
+    err.classList.add('show');
+    pbarDone();
+  } finally {
+    btn.disabled = false;
+    pbarDone();
+  }
+}
+
+async function sha256(file) {
+  const buf = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ══════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════ */
+const tnav = document.getElementById('tnav');
+window.addEventListener('scroll', () => tnav.classList.toggle('stuck', window.scrollY > 44), {passive:true});
+const PGS = ['home','url','msg','file','hist'];
+let transitioning = false;
+function go(id) {
+  if (transitioning) return;
+  const cur = document.querySelector('.pg.on');
+  const next = document.getElementById('pg-' + id);
+  if (!next || (cur && cur.id === 'pg-' + id)) return;
+  PGS.forEach(p => {
+    ['nl-','dm-'].forEach(pre => { const el = document.getElementById(pre + p); if (el) el.classList.toggle('on', p === id); });
+  });
+  if (!cur) { next.classList.add('on'); fireReveals(); return; }
+  transitioning = true;
+  cur.classList.add('pg-leaving');
+  setTimeout(() => {
+    cur.classList.remove('on','pg-leaving');
+    next.classList.add('on','pg-entering');
+    window.scrollTo({top:0});
+    setTimeout(() => { next.classList.remove('pg-entering'); transitioning = false; fireReveals(); }, 400);
+  }, 220);
+}
+let drawerOpen = false;
+function toggleDrawer() {
+  drawerOpen = !drawerOpen;
+  document.getElementById('drawer').classList.toggle('open', drawerOpen);
+  document.getElementById('ham').textContent = drawerOpen ? '✕' : '☰';
+}
+
+/* ══════════════════════════════════════════════
+   REVEAL
+══════════════════════════════════════════════ */
+const ro = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); }); }, {threshold:.07, rootMargin:'0px 0px -40px 0px'});
+function fireReveals() {
+  document.querySelectorAll('.pg.on .reveal').forEach(el => { el.classList.remove('on'); ro.unobserve(el); ro.observe(el); });
+}
+fireReveals();
+
+/* ══════════════════════════════════════════════
+   CURSOR GLOW
+══════════════════════════════════════════════ */
+const cglow = document.getElementById('cglow');
+window.addEventListener('mousemove', e => {
+  cglow.style.left = e.clientX + 'px';
+  cglow.style.top  = e.clientY + 'px';
+}, {passive:true});
+
+/* ══════════════════════════════════════════════
+   RIPPLE
+══════════════════════════════════════════════ */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.go-btn, .nav-btn');
+  if (!btn) return;
+  const r = document.createElement('span');
+  const rect = btn.getBoundingClientRect();
+  r.className = 'rpl';
+  r.style.left = (e.clientX - rect.left) + 'px';
+  r.style.top  = (e.clientY - rect.top)  + 'px';
+  btn.appendChild(r);
+  setTimeout(() => r.remove(), 650);
+});
+
+/* ══════════════════════════════════════════════
+   TCARD STAGGER on re-enter
+══════════════════════════════════════════════ */
+const tcardRo = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const cards = e.target.querySelectorAll('.tcard');
+      cards.forEach((c, i) => {
+        c.style.opacity = '0';
+        c.style.transform = 'translateY(24px)';
+        c.style.transition = `opacity .6s ${i * 0.1}s cubic-bezier(.22,1,.36,1), transform .6s ${i * 0.1}s cubic-bezier(.22,1,.36,1)`;
+        requestAnimationFrame(() => { c.style.opacity = '1'; c.style.transform = 'translateY(0)'; });
+      });
+    }
+  });
+}, {threshold: 0.1});
+const tc = document.querySelector('.tcards');
+if (tc) tcardRo.observe(tc);
+
+/* ══════════════════════════════════════════════
+   CLOCK + INIT
+══════════════════════════════════════════════ */
+function tick() {
+  const n = new Date(), m = n.getMinutes().toString().padStart(2,'0');
+  let h = n.getHours(), ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clk').textContent = h + ':' + m + ' ' + ap;
+}
+setInterval(tick, 30000); tick();
+updateStats();
+renderHistory();
+</script>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CyberGuard AI{% endblock %}</title>
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <i class='bx bxs-shield-alt-2 logo-icon'></i>
+            <span class="logo-text">CyberGuard AI</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('index') }}"
+               class="nav-item {% if request.endpoint == 'index' %}active{% endif %}">
+                <i class='bx bxs-dashboard nav-icon'></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('url_analysis') }}"
+               class="nav-item {% if request.endpoint == 'url_analysis' %}active{% endif %}">
+                <i class='bx bx-link nav-icon'></i>
+                <span>Analisar URL</span>
+            </a>
+            <a href="{{ url_for('message_analysis') }}"
+               class="nav-item {% if request.endpoint == 'message_analysis' %}active{% endif %}">
+                <i class='bx bx-message-detail nav-icon'></i>
+                <span>Analisar Mensagem</span>
+            </a>
+            <a href="{{ url_for('file_analysis') }}"
+               class="nav-item {% if request.endpoint == 'file_analysis' %}active{% endif %}">
+                <i class='bx bx-file nav-icon'></i>
+                <span>Analisar Ficheiro</span>
+            </a>
+            <a href="{{ url_for('history') }}"
+               class="nav-item {% if request.endpoint == 'history' %}active{% endif %}">
+                <i class='bx bx-history nav-icon'></i>
+                <span>Histórico</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <span>CyberGuard AI — Projeto escolar</span>
+        </div>
+    </aside>
+
+    <!-- Overlay (mobile) -->
+    <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <header class="top-bar">
+            <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu">
+                <i class='bx bx-menu'></i>
+            </button>
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        </header>
+        <div class="content-area">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

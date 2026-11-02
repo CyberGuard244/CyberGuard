@@ -1,0 +1,33 @@
+# Variáveis de ambiente — NUNCA colocar no GitHub
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Base de dados
+*.db
+*.sqlite3
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Uploads temporários
+uploads/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Testes
+.pytest_cache/
+.coverage

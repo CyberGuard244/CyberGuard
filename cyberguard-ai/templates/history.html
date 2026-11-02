@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Histórico — CyberGuard AI{% endblock %}
+{% block page_title %}Histórico de Análises{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <p style="color: var(--text-sec); font-size:14px;">
+        {{ analyses | length }} análise(s) registada(s)
+    </p>
+    {% if analyses %}
+    <button class="btn-analyze" onclick="clearHistory()"
+            style="background: #2a0d0d; border: 1px solid rgba(239,68,68,0.3);">
+        <i class='bx bx-trash'></i> Apagar Histórico
+    </button>
+    {% endif %}
+</div>
+
+{% if analyses %}
+<div class="card">
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tipo</th>
+                <th>Conteúdo</th>
+                <th>Risco</th>
+                <th>Indicadores</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in analyses %}
+            <tr>
+                <td style="color: var(--text-muted);">{{ a.id }}</td>
+                <td>
+                    {% if a.analysis_type == 'url' %}
+                        <i class='bx bx-link' style="color:var(--accent-red);"></i> URL
+                    {% elif a.analysis_type == 'message' %}
+                        <i class='bx bx-message-detail' style="color:var(--accent-red);"></i> Mensagem
+                    {% else %}
+                        <i class='bx bx-file' style="color:var(--accent-red);"></i> Ficheiro
+                    {% endif %}
+                </td>
+                <td class="td-truncate">{{ a.content }}</td>
+                <td>
+                    <span class="risk-badge risk-{{ a.risk_level }}">
+                        ● {{ {'low':'Baixo','medium':'Médio','high':'Alto'}[a.risk_level] or a.risk_level }}
+                    </span>
+                </td>
+                <td style="font-size:12px; color:var(--text-muted);">
+                    {{ a.indicators | replace("['","") | replace("']","") | replace("', '",", ") | truncate(60) }}
+                </td>
+                <td style="white-space:nowrap;">
+                    {{ a.created_at[:16] | replace('T', ' ') }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card empty-state">
+    <i class='bx bx-history'></i>
+    <p>Ainda não fizeste nenhuma análise.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function clearHistory() {
+    if (!confirm('Tens a certeza que queres apagar todo o histórico?')) return;
+    const response = await fetch('/api/history', { method: 'DELETE' });
+    if (response.ok) window.location.reload();
+}
+</script>
+{% endblock %}

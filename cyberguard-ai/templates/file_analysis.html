@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Analisar Ficheiro — CyberGuard AI{% endblock %}
+{% block page_title %}Analisar Ficheiro{% endblock %}
+
+{% block content %}
+<div class="form-page">
+
+    <div class="card warning-card" style="margin-bottom: 24px;">
+        <i class='bx bx-error-circle' style="font-size: 20px; color: var(--risk-medium); flex-shrink: 0;"></i>
+        <div>
+            <p style="font-weight: 600; margin-bottom: 4px; color: var(--risk-medium);">Limitação importante</p>
+            <p style="font-size: 13px; color: var(--text-sec);">
+                Esta análise examina apenas <strong>metadados</strong> (nome, extensão, tamanho).
+                O ficheiro <strong>não é executado nem interpretado</strong>.
+                Não substitui um antivírus real.
+            </p>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+        <p class="card-title">Ficheiro para analisar</p>
+
+        <div class="form-group">
+            <label class="form-label" for="file-input">Seleciona o ficheiro</label>
+            <input
+                type="file"
+                id="file-input"
+                class="form-input"
+                accept=".pdf,.txt,.docx,.xlsx,.png,.jpg,.jpeg"
+            >
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                Tipos aceites: .pdf .txt .docx .xlsx .png .jpg .jpeg &nbsp;·&nbsp; Máximo: 1 MB
+            </p>
+        </div>
+
+        <div id="error-msg" class="error-msg"></div>
+
+        <button class="btn-analyze" id="analyze-file-btn" onclick="analyzeFile()">
+            <i class='bx bx-search-alt'></i> Analisar Ficheiro
+        </button>
+    </div>
+
+    <div class="result-box" id="result-box">
+        <div class="result-header">
+            <p class="section-title" style="margin:0;">Resultado da Análise</p>
+            <span class="risk-badge" id="risk-level">—</span>
+        </div>
+
+        <div id="file-meta" class="file-meta"></div>
+
+        <div style="margin-bottom: 20px;">
+            <p class="label-small">Indicadores encontrados</p>
+            <ul class="indicators-list" id="indicators-list"></ul>
+        </div>
+
+        <div id="ai-box" style="display:none;">
+            <span class="ai-label"><i class='bx bx-bot'></i> Explicação da IA</span>
+            <div class="ai-explanation" id="ai-explanation"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function analyzeFile() {
+    const fileInput = document.getElementById('file-input');
+    const btn = document.getElementById('analyze-file-btn');
+
+    if (!fileInput.files || !fileInput.files[0]) {
+        showError('Por favor, seleciona um ficheiro.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    const filename = fileInput.files[0].name;
+
+    showLoading(btn);
+    clearError();
+
+    try {
+        const response = await fetch('/api/analyze/file', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (!response.ok) { showError(data.error || 'Erro ao analisar o ficheiro.'); return; }
+        showFileResult(data, filename);
+    } catch (err) {
+        showError('Não foi possível ligar ao servidor.');
+    } finally {
+        hideLoading(btn, '<i class="bx bx-search-alt"></i> Analisar Ficheiro');
+    }
+}
+
+function showFileResult(data, filename) {
+    const resultBox = document.getElementById('result-box');
+    resultBox.classList.add('show');
+
+    const riskEl = document.getElementById('risk-level');
+    riskEl.className = 'risk-badge risk-' + data.risk_level;
+    riskEl.textContent = '● ' + getRiskLabel(data.risk_level);
+
+    document.getElementById('file-meta').innerHTML = `
+        <div class="meta-grid">
+            <span class="meta-label">Ficheiro</span><span>${escapeHtml(filename)}</span>
+            <span class="meta-label">Tamanho</span><span>${Math.round(data.file_size / 1024)} KB</span>
+            <span class="meta-label">Extensão</span><span>${escapeHtml(data.extension)}</span>
+            <span class="meta-label">SHA-256</span>
+            <span style="font-family: monospace; font-size: 11px; word-break: break-all;">${data.file_hash}</span>
+        </div>`;
+
+    const list = document.getElementById('indicators-list');
+    if (data.indicators && data.indicators.length > 0) {
+        list.innerHTML = data.indicators.map(i => `<li class="indicator-item">${escapeHtml(i)}</li>`).join('');
+    } else {
+        list.innerHTML = '<p class="indicator-none">✓ Nenhum indicador suspeito encontrado nos metadados</p>';
+    }
+
+    const aiBox = document.getElementById('ai-box');
+    const aiEl  = document.getElementById('ai-explanation');
+    if (data.ai_explanation) { aiEl.textContent = data.ai_explanation; aiBox.style.display = 'block'; }
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+{% endblock %}

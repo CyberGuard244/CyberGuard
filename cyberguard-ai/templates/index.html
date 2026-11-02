@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CyberGuard AI{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Boas-vindas -->
+<div class="welcome-card card">
+    <i class='bx bxs-shield-alt-2' style="font-size: 48px; color: var(--accent-red);"></i>
+    <div>
+        <h2>Bem-vindo ao CyberGuard AI</h2>
+        <p>Analisa URLs, mensagens e ficheiros suspeitos com apoio de inteligência artificial.</p>
+    </div>
+</div>
+
+<!-- Cartões de análise rápida -->
+<p class="section-title">
+    <i class='bx bx-search-alt' style="color: var(--accent-red);"></i> Análise Rápida
+</p>
+<div class="grid-3" style="margin-bottom: 32px;">
+    <a href="{{ url_for('url_analysis') }}" class="analysis-card">
+        <i class='bx bx-link card-icon'></i>
+        <h3>Analisar URL</h3>
+        <p>Verifica se um endereço web é suspeito ou pode ser phishing.</p>
+    </a>
+    <a href="{{ url_for('message_analysis') }}" class="analysis-card">
+        <i class='bx bx-message-detail card-icon'></i>
+        <h3>Analisar Mensagem</h3>
+        <p>Examina emails ou SMS em busca de sinais de engenharia social.</p>
+    </a>
+    <a href="{{ url_for('file_analysis') }}" class="analysis-card">
+        <i class='bx bx-file card-icon'></i>
+        <h3>Analisar Ficheiro</h3>
+        <p>Verifica metadados de ficheiros suspeitos de forma segura.</p>
+    </a>
+</div>
+
+<!-- Estatísticas -->
+<p class="section-title">
+    <i class='bx bx-bar-chart-alt-2' style="color: var(--accent-red);"></i> Resumo
+</p>
+<div class="grid-3" style="margin-bottom: 32px;">
+    <div class="card stat-card">
+        <div class="stat-number">{{ recent_analyses | length }}</div>
+        <div class="stat-label">Análises recentes</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-number" style="color: var(--risk-high);">
+            {{ recent_analyses | selectattr('risk_level', 'equalto', 'high') | list | length }}
+        </div>
+        <div class="stat-label">Risco elevado</div>
+    </div>
+    <div class="card stat-card">
+        <div class="stat-number" style="color: var(--risk-low);">
+            {{ recent_analyses | selectattr('risk_level', 'equalto', 'low') | list | length }}
+        </div>
+        <div class="stat-label">Baixo risco</div>
+    </div>
+</div>
+
+<!-- Análises recentes -->
+<p class="section-title">
+    <i class='bx bx-history' style="color: var(--accent-red);"></i> Análises Recentes
+</p>
+
+{% if recent_analyses %}
+<div class="card">
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Tipo</th>
+                <th>Conteúdo</th>
+                <th>Risco</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in recent_analyses %}
+            <tr>
+                <td>
+                    {% if a.analysis_type == 'url' %}
+                        <i class='bx bx-link' style="color: var(--accent-red);"></i> URL
+                    {% elif a.analysis_type == 'message' %}
+                        <i class='bx bx-message-detail' style="color: var(--accent-red);"></i> Mensagem
+                    {% else %}
+                        <i class='bx bx-file' style="color: var(--accent-red);"></i> Ficheiro
+                    {% endif %}
+                </td>
+                <td class="td-truncate">{{ a.content }}</td>
+                <td>
+                    <span class="risk-badge risk-{{ a.risk_level }}">
+                        ● {{ {'low': 'Baixo', 'medium': 'Médio', 'high': 'Alto'}[a.risk_level] or a.risk_level }}
+                    </span>
+                </td>
+                <td>{{ a.created_at[:16] | replace('T', ' ') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('history') }}" class="link-more">Ver histórico completo →</a>
+</div>
+{% else %}
+<div class="card empty-state">
+    <i class='bx bx-search-alt'></i>
+    <p>Ainda não fizeste nenhuma análise.<br>Escolhe uma das opções acima para começar.</p>
+</div>
+{% endif %}
+
+<div class="warning-notice">
+    <i class='bx bx-info-circle'></i>
+    <p>Os resultados são <strong>indicativos</strong> e podem conter falsos positivos ou negativos.
+       Nunca tomes decisões de segurança baseadas apenas nesta ferramenta.</p>
+</div>
+
+{% endblock %}
